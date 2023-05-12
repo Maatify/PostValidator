@@ -2,7 +2,7 @@
 
 namespace Maatify\PostValidator;
 
-use Maatify\app\Assist\RegexPatterns;
+use app\Assist\RegexPatterns;
 use Maatify\Json\Json;
 
 class PostValidator extends RegexPatterns
