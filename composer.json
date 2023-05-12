@@ -1,7 +1,7 @@
 {
-    "name": "maatify/post_validator",
+    "name": "maatify/post-validator",
     "description": "maatify.dev post validator handler, known by our team",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "type": "library",
     "keywords": [
         "PHP",
