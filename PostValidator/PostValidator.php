@@ -7,6 +7,7 @@ use Maatify\Json\Json;
 
 class PostValidator extends RegexPatterns
 {
+    protected static int|string $line;
     private static self $instance;
     private array $types = [
         'email'  => 'email',
@@ -134,6 +135,83 @@ class PostValidator extends RegexPatterns
         } else {
             return false;
         }
+    }
+
+    protected function HandlePostType(string $name, string $type, string $more_info = ''): string
+    {
+        switch ($type){
+            case 'email';
+                return self::EmailValidation($_POST[$name], $name);
+            case 'ip';
+                return self::IPValidation($_POST[$name], $name);
+            case 'phone';
+                if(!preg_match(self::Patterns($type), $_POST[$name]) && !preg_match(self::Patterns('phone_full'), $_POST[$name])){
+                    Json::Invalid($name, $more_info, self::$line);
+                    return '';
+                }
+                $ph = PhoneNumberValidation::getInstance()->SetRegion()->SetNumber($_POST[$name]);
+                if($ph->NumberIsValid()){
+                    $phone =  $ph->NumberFormatE164();
+                    if(str_contains($phone, '+20')){
+                        if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
+                            Json::Invalid('phone', $more_info, self::$line);
+                        }
+                    }
+                    return $phone;
+                }else{
+                    Json::Invalid($name,  $more_info, self::$line);
+                    exit();
+                }
+            case 'date':
+            case 'year':
+            case 'year_month':
+            case 'name';
+            case 'username';
+            case 'password';
+            case 'account_no';
+            case 'national_id';
+            case 'pin';
+            case 'code';
+            case 'app_type';
+            case 'name_en';
+            case 'name_ar';
+            case 'main_hash';
+            case 'device_id';
+                if(!preg_match(self::Patterns($type), $_POST[$name])){
+                    Json::Invalid($name, $more_info, self::$line);
+                    exit();
+                }
+                break;
+            case 'day';
+            case 'month';
+                if(!is_numeric($_POST[$name]) && $_POST[$name] <= 0){
+                    Json::Invalid($name,$more_info, self::$line);
+                    exit();
+                }else{
+                    if($_POST[$name] > 9){
+                        if(!preg_match(self::Patterns($type), $_POST[$name])){
+                            Json::Invalid($name, $more_info, self::$line);
+                            exit();
+                        }
+                    }else{
+                        return '0'.$_POST[$name];
+                    }
+                }
+                break;
+
+            case 'float':
+            case 'int';
+                //                if(!ctype_digit($_POST[$name])){
+                //                    Json::Invalid($name,__LINE__);
+                //                    return '';
+                //                }
+                if(!is_numeric($_POST[$name])){
+                    Json::Invalid($name,$more_info, self::$line);
+                    exit();
+                }
+                break;
+        }
+        return self::ClearInput($_POST[$name]);
     }
 
 /*
