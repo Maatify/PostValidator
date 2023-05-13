@@ -1,7 +1,7 @@
 {
     "name": "maatify/post-validator",
     "description": "maatify.dev post validator handler, known by our team",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "type": "library",
     "keywords": [
         "PHP",
@@ -54,7 +54,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Maatify\\PostValidator\\": "PostValidator/"
+            "Maatify\\PostValidator\\": "PostValidator/",
+            "App\\": "../app/"
         }
     }
 }
