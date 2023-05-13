@@ -4,7 +4,7 @@ namespace Maatify\PostValidator;
 
 use Maatify\Json\Json;
 
-class PostValidator extends \app\Assist\RegexPatterns
+class PostValidator extends \App\Assist\RegexPatterns
 {
     protected static int|string $line;
     private static self $instance;
