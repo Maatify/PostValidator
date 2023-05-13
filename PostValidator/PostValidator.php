@@ -2,10 +2,9 @@
 
 namespace Maatify\PostValidator;
 
-use app\Assist\RegexPatterns;
 use Maatify\Json\Json;
 
-class PostValidator extends RegexPatterns
+class PostValidator extends \app\Assist\RegexPatterns
 {
     protected static int|string $line;
     private static self $instance;
