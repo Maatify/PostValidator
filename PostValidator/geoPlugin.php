@@ -120,8 +120,8 @@ class geoPlugin
         $this->dmaCode = $data['geoplugin_dmaCode'] ?? '';
         $this->countryCode = $data['geoplugin_countryCode'] ?? '';
         $this->countryName = $data['geoplugin_countryName'] ?? '';
-        $this->inEU = $data['geoplugin_inEU'] ?? '';
-        $this->euVATrate = $data['geoplugin_euVATrate'] ?? '';
+        $this->inEU = $data['geoplugin_inEU'] ?? 0;
+        $this->euVATrate = $data['geoplugin_euVATrate'] ?? false;
         $this->continentCode = $data['geoplugin_continentCode'] ?? '';
         $this->continentName = $data['geoplugin_continentName'] ?? '';
         $this->latitude = $data['geoplugin_latitude'] ?? '';
