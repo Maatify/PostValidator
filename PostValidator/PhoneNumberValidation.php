@@ -8,6 +8,7 @@ use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberToCarrierMapper;
 use libphonenumber\PhoneNumberUtil;
+use Maatify\Logger\Logger;
 
 class PhoneNumberValidation
 {
@@ -50,7 +51,13 @@ class PhoneNumberValidation
 
     private static function NumberProto(): ?PhoneNumber
     {
-        return self::$phoneUtil->parse(self::$mobileNumber, self::$defaultRegion);
+        try {
+            return self::$phoneUtil->parse(self::$mobileNumber, self::$defaultRegion);
+        }catch (NumberParseException $numberParseException){
+            Logger::RecordLog($numberParseException);
+            return null;
+        }
+
     }
 
     public function NumberCountry(): string
@@ -75,8 +82,13 @@ class PhoneNumberValidation
 
     public function NumberIsValid(): bool
     {
-        $swissNumberProto = self::NumberProto();
-        return self::$phoneUtil->isValidNumber($swissNumberProto);
+        try {
+            $swissNumberProto = self::NumberProto();
+            return self::$phoneUtil->isValidNumber($swissNumberProto);
+        }catch (NumberParseException $numberParseException){
+            Logger::RecordLog($numberParseException);
+            return false;
+        }
     }
 
     public function NumberFormat(string $mobileNumber): string
