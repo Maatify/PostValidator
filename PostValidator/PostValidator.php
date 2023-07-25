@@ -2,7 +2,9 @@
 
 namespace Maatify\PostValidator;
 
+use libphonenumber\NumberParseException;
 use Maatify\Json\Json;
+use Maatify\Logger\Logger;
 
 class PostValidator extends \App\Assist\RegexPatterns
 {
@@ -149,18 +151,46 @@ class PostValidator extends \App\Assist\RegexPatterns
                     return '';
                 }
                 $ph = PhoneNumberValidation::getInstance()->SetRegion()->SetNumber($_POST[$name]);
+//                if($ph->NumberIsValid()){
+//                    $phone =  $ph->NumberFormatE164();
+//                    if(str_contains($phone, '+20')){
+//                        if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
+//                            Json::Invalid('phone', $more_info, self::$line);
+//                        }
+//                    }
+//                    return $phone;
+//                }else{
+//                    Json::Invalid($name,  $more_info, self::$line);
+//                    exit();
+//                }
                 if($ph->NumberIsValid()){
-                    $phone =  $ph->NumberFormatE164();
-                    if(str_contains($phone, '+20')){
-                        if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
-                            Json::Invalid('phone', $more_info, self::$line);
+                    try {
+                        $phone =  $ph->NumberFormatE164();
+                        if(str_contains($phone, '+20')){
+                            if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
+                                Json::Invalid('phone', $more_info, self::$line);
+                            }
                         }
+                        return $phone;
+                    }catch (NumberParseException $e) {
+                        Logger::RecordLog($e, 'post_validator_phone');
+                        Json::TryAgain();
+                        exit();
                     }
-                    return $phone;
                 }else{
                     Json::Invalid($name,  $more_info, self::$line);
                     exit();
                 }
+
+            case 'mobile_egypt';
+                if(!preg_match(self::Patterns($type), $_POST[$name]) ||
+                   !in_array(substr($_POST[$name], 1, 2), [10, 11, 12, 15]) ||
+                   strlen((int)$_POST[$name]) < 10){
+                    Json::Invalid($name, $more_info, self::$line);
+                    return '';
+                }
+                return $_POST[$name];
+
             case 'date':
             case 'year':
             case 'year_month':
@@ -200,10 +230,6 @@ class PostValidator extends \App\Assist\RegexPatterns
 
             case 'float':
             case 'int';
-                //                if(!ctype_digit($_POST[$name])){
-                //                    Json::Invalid($name,__LINE__);
-                //                    return '';
-                //                }
                 if(!is_numeric($_POST[$name])){
                     Json::Invalid($name,$more_info, self::$line);
                     exit();
