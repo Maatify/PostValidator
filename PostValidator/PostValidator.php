@@ -48,6 +48,11 @@ class PostValidator
         $this->regex_patterns = RegexPatterns::obj();
     }
 
+    public function ValidatorTypes(): array
+    {
+        return ['Require', 'RequireAcceptEmpty', 'Optional'];
+    }
+
     public function Require(string $name, string $type = 'string', string $more_info = ''): string
     {
         if (empty($_POST)) {
