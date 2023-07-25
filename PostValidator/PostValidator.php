@@ -48,7 +48,7 @@ class PostValidator
         $this->regex_patterns = RegexPatterns::obj();
     }
 
-    public function Require(string $name, string $type, string $more_info = ''): string
+    public function Require(string $name, string $type = 'string', string $more_info = ''): string
     {
         if (empty($_POST)) {
             Json::MissingMethod();
@@ -68,7 +68,7 @@ class PostValidator
         return $this->HandlePostType($name, $type, $more_info);
     }
 
-    public function RequireAcceptEmpty(string $name, string $type, string $more_info = ''): string
+    public function RequireAcceptEmpty(string $name, string $type = 'string', string $more_info = ''): string
     {
         if (empty($_POST)) {
             Json::MissingMethod();
@@ -87,7 +87,7 @@ class PostValidator
         return $this->HandlePostType($name, $type, $more_info);
     }
 
-    public function Optional(string $name, string $type, string $more_info = ''): string
+    public function Optional(string $name, string $type = 'string', string $more_info = ''): string
     {
         if(!empty($_POST) && !empty($_POST[$name]) && !is_array($_POST[$name])){
             return $this->HandlePostType($name, $type, $more_info);
@@ -146,7 +146,7 @@ class PostValidator
         }
     }
 
-    protected function HandlePostType(string $name, string $type, string $more_info = ''): string
+    private function HandlePostType(string $name, string $type, string $more_info): string
     {
 //        if(in_array($type, self::keys())){
             switch ($type){

@@ -29,12 +29,12 @@ class GetValidator
     private RegexPatterns $regex_patterns;
 
 
-    public function ValidateGet(string $name, string $type): bool|int
+    public function ValidateGet(string $name, string $type = 'string'): bool|int
     {
         return preg_match($this->regex_patterns::Patterns($type), $_GET[$name]);
     }
 
-    public function Optional(string $name, string $type, string $more_info = ''): string
+    public function Optional(string $name, string $type = 'string', string $more_info = ''): string
     {
         if(!empty($_GET) && !empty($_GET[$name]) && !is_array($_GET[$name])){
             return $this->HandleGetType($name, $type, $more_info);
