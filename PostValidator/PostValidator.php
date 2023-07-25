@@ -2,11 +2,13 @@
 
 namespace Maatify\PostValidator;
 
+use \App\Assist\RegexPatterns;
 use libphonenumber\NumberParseException;
+//use Maatify\app\Assist\RegexPatterns;
 use Maatify\Json\Json;
 use Maatify\Logger\Logger;
 
-class PostValidator extends \App\Assist\RegexPatterns
+class PostValidator
 {
     protected static int|string $line;
     private static self $instance;
@@ -19,6 +21,7 @@ class PostValidator extends \App\Assist\RegexPatterns
         'int'    => 'int',
         'pin'    => 'pin',
     ];
+    private RegexPatterns $regex_patterns;
 
     /**
      * @property ?string $email
@@ -38,6 +41,11 @@ class PostValidator extends \App\Assist\RegexPatterns
         }
         self::$line = debug_backtrace()[0]['line'];
         return self::$instance;
+    }
+
+    public function __construct()
+    {
+        $this->regex_patterns = RegexPatterns::obj();
     }
 
     public function Require(string $name, string $type, string $more_info = ''): string
@@ -140,102 +148,82 @@ class PostValidator extends \App\Assist\RegexPatterns
 
     protected function HandlePostType(string $name, string $type, string $more_info = ''): string
     {
-        switch ($type){
-            case 'email';
-                return self::EmailValidation($_POST[$name], $name);
-            case 'ip';
-                return self::IPValidation($_POST[$name], $name);
-            case 'phone';
-                if(!preg_match(self::Patterns($type), $_POST[$name]) && !preg_match(self::Patterns('phone_full'), $_POST[$name])){
-                    Json::Invalid($name, $more_info, self::$line);
-                    return '';
-                }
-                $ph = PhoneNumberValidation::getInstance()->SetRegion()->SetNumber($_POST[$name]);
-//                if($ph->NumberIsValid()){
-//                    $phone =  $ph->NumberFormatE164();
-//                    if(str_contains($phone, '+20')){
-//                        if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
-//                            Json::Invalid('phone', $more_info, self::$line);
-//                        }
-//                    }
-//                    return $phone;
-//                }else{
-//                    Json::Invalid($name,  $more_info, self::$line);
-//                    exit();
-//                }
-                if($ph->NumberIsValid()){
-                    try {
-                        $phone =  $ph->NumberFormatE164();
-                        if(str_contains($phone, '+20')){
-                            if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
-                                Json::Invalid('phone', $more_info, self::$line);
-                            }
-                        }
-                        return $phone;
-                    }catch (NumberParseException $e) {
-                        Logger::RecordLog($e, 'post_validator_phone');
-                        Json::TryAgain();
-                        exit();
+//        if(in_array($type, self::keys())){
+            switch ($type){
+                case 'email';
+                    return self::EmailValidation($_POST[$name], $name);
+                case 'ip';
+                    return self::IPValidation($_POST[$name], $name);
+                case 'phone';
+                    if(!preg_match($this->regex_patterns::Patterns($type), $_POST[$name]) && !preg_match($this->regex_patterns::Patterns('phone_full'), $_POST[$name])){
+                        Json::Invalid($name, $more_info, self::$line);
+                        return '';
                     }
-                }else{
-                    Json::Invalid($name,  $more_info, self::$line);
-                    exit();
-                }
-
-            case 'mobile_egypt';
-                if(!preg_match(self::Patterns($type), $_POST[$name]) ||
-                   !in_array(substr($_POST[$name], 1, 2), [10, 11, 12, 15]) ||
-                   strlen((int)$_POST[$name]) < 10){
-                    Json::Invalid($name, $more_info, self::$line);
-                    return '';
-                }
-                return $_POST[$name];
-
-            case 'date':
-            case 'year':
-            case 'year_month':
-            case 'name';
-            case 'username';
-            case 'password';
-            case 'account_no';
-            case 'national_id';
-            case 'pin';
-            case 'code';
-            case 'app_type';
-            case 'name_en';
-            case 'name_ar';
-            case 'main_hash';
-            case 'device_id';
-                if(!preg_match(self::Patterns($type), $_POST[$name])){
-                    Json::Invalid($name, $more_info, self::$line);
-                    exit();
-                }
-                break;
-            case 'day';
-            case 'month';
-                if(!is_numeric($_POST[$name]) && $_POST[$name] <= 0){
-                    Json::Invalid($name,$more_info, self::$line);
-                    exit();
-                }else{
-                    if($_POST[$name] > 9){
-                        if(!preg_match(self::Patterns($type), $_POST[$name])){
-                            Json::Invalid($name, $more_info, self::$line);
+                    $ph = PhoneNumberValidation::getInstance()->SetRegion()->SetNumber($_POST[$name]);
+                    if($ph->NumberIsValid()){
+                        try {
+                            $phone =  $ph->NumberFormatE164();
+                            if(str_contains($phone, '+20')){
+                                if(!in_array(substr($phone, 3, 2), [10, 11, 12, 15])){
+                                    Json::Invalid('phone', $more_info, self::$line);
+                                }
+                            }
+                            return $phone;
+                        }catch (NumberParseException $e) {
+                            Logger::RecordLog($e, 'post_validator_phone');
+                            Json::TryAgain();
                             exit();
                         }
                     }else{
-                        return '0'.$_POST[$name];
+                        Json::Invalid($name,  $more_info, self::$line);
+                        exit();
                     }
-                }
-                break;
 
-            case 'float':
-            case 'int';
-                if(!is_numeric($_POST[$name])){
-                    Json::Invalid($name,$more_info, self::$line);
-                    exit();
-                }
-                break;
-        }
+                case 'mobile_egypt';
+                    if(!preg_match($this->regex_patterns::Patterns($type), $_POST[$name]) ||
+                       !in_array(substr($_POST[$name], 1, 2), [10, 11, 12, 15]) ||
+                       strlen((int)$_POST[$name]) < 10){
+                        Json::Invalid($name, $more_info, self::$line);
+                        return '';
+                    }
+                    return $_POST[$name];
+
+                case 'day';
+                case 'month';
+                    if(!is_numeric($_POST[$name]) && $_POST[$name] <= 0){
+                        Json::Invalid($name,$more_info, self::$line);
+                        exit();
+                    }else{
+                        if($_POST[$name] > 9){
+                            if(!preg_match($this->regex_patterns::Patterns($type), $_POST[$name])){
+                                Json::Invalid($name, $more_info, self::$line);
+                                exit();
+                            }
+                        }else{
+                            return '0'.$_POST[$name];
+                        }
+                    }
+                    break;
+
+                case 'float';
+                case 'int';
+                    if(!is_numeric($_POST[$name])){
+                        Json::Invalid($name,$more_info, self::$line);
+                        exit();
+                    }
+                    break;
+
+                default;
+                    if(!empty($regex = $this->regex_patterns::Patterns($type))){
+                        if(!preg_match($regex, $_POST[$name])){
+                            Json::Invalid($name, $more_info, self::$line);
+                            exit();
+                        }
+                    }
+
+            }
+//        }
+
         return self::ClearInput($_POST[$name]);
     }
 
