@@ -117,7 +117,7 @@ class PostValidator extends \App\Assist\RegexPatterns
     {
         $data = trim($data);
         $data = stripslashes($data);
-        return htmlspecialchars($data);
+        return htmlspecialchars($data,ENT_QUOTES|ENT_SUBSTITUTE);
     }
 
     public function __get(string $name)
