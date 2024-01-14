@@ -49,4 +49,5 @@ class ValidatorConstants
     const TypeFloat = 'float';
     const TypeBool = 'bool';
     const TypeDeviceId = 'device_id';
+    const Status = 'status';
 }

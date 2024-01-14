@@ -156,6 +156,9 @@ class PostValidator extends ValidatorRegexPatterns
 
     private function HandlePostType(string $name, string $type, string $more_info): string
     {
+        if (empty($regex = $this->regex_patterns::Patterns($type))) {
+            $regex = $this->Patterns($type);
+        }
         //        if(in_array($type, self::keys())){
         switch ($type) {
             case 'email';
@@ -200,6 +203,13 @@ class PostValidator extends ValidatorRegexPatterns
 
                 return $_POST[$name];
 
+            case 'status';
+                if (strtolower($_POST[$name]) !== 'all' && ! empty($regex) && ! preg_match($regex, $_POST[$name])) {
+                    Json::Invalid($name, $more_info, self::$line);
+                    exit();
+                }
+                return $_POST[$name];
+
             case 'day';
             case 'month';
                 if (! is_numeric($_POST[$name]) && $_POST[$name] <= 0) {
@@ -207,9 +217,11 @@ class PostValidator extends ValidatorRegexPatterns
                     exit();
                 } else {
                     if ($_POST[$name] > 9) {
-                        if (! preg_match($this->regex_patterns::Patterns($type), $_POST[$name])) {
-                            Json::Invalid($name, $more_info, self::$line);
-                            exit();
+                        if (! empty($regex)) {
+                            if (! preg_match($regex, $_POST[$name])) {
+                                Json::Invalid($name, $more_info, self::$line);
+                                exit();
+                            }
                         }
                     } else {
                         return '0' . $_POST[$name];
@@ -226,9 +238,9 @@ class PostValidator extends ValidatorRegexPatterns
                 break;
 
             default;
-                if (empty($regex = $this->regex_patterns::Patterns($type))) {
-                    $regex = $this->Patterns($type);
-                }
+//                if (empty($regex = $this->regex_patterns::Patterns($type))) {
+//                    $regex = $this->Patterns($type);
+//                }
                 if (! empty($regex)) {
                     if (! preg_match($regex, $_POST[$name])) {
                         Json::Invalid($name, $more_info, self::$line);
